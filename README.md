@@ -1,17 +1,19 @@
 # Glass Entity Grid
 
-Eigenständige Lovelace-Karte im Frosted-Glass-Stil mit visuellem Dialog-Editor.
+Eigenständige Home-Assistant-Lovelace-Karte im Frosted-Glass-Stil mit visuellem Konfigurationseditor.
 
-## Installation über HACS
-1. Dieses Repository als benutzerdefiniertes Repository in HACS (Kategorie: Dashboard) hinzufügen.
-2. **Glass Entity Grid** installieren.
-3. Home Assistant neu laden und die Ressource `/hacsfiles/glass-entity-grid/glass-entity-grid.js` als JavaScript-Modul einbinden, falls HACS sie nicht automatisch registriert.
-4. Im Dashboard eine Karte hinzufügen und **Glass Entity Grid** auswählen.
+## HACS-Installation
 
-## Konfiguration
-Die Karte kann vollständig über den visuellen Editor konfiguriert werden: Layout, Glas-Design, Farben, Schatten, Typografie und Geräte. Die Live-Vorschau zeigt eine beispielhafte Darstellung.
+1. Die Dateien `hacs.json`, `glass-entity-grid.js`, `README.md` und `LICENSE` müssen direkt im Stammverzeichnis (Root) des GitHub-Repositories liegen.
+2. In HACS **⋮ → Benutzerdefinierte Repositories** öffnen.
+3. GitHub-Repository-URL eintragen und als Kategorie **Dashboard** auswählen.
+4. Hinzufügen und anschließend in HACS nach „Glass Entity Grid“ suchen und installieren.
+5. Falls die Ressource nicht automatisch angelegt wird, unter Einstellungen → Dashboards → Ressourcen hinzufügen:
+   `/hacsfiles/glass-entity-grid/glass-entity-grid.js`
+   Typ: **JavaScript-Modul**.
 
-### YAML-Beispiel
+## YAML-Beispiel
+
 ```yaml
 type: custom:glass-entity-grid
 columns: 3
@@ -24,7 +26,6 @@ entities:
     icon: mdi:floor-lamp
 ```
 
-## Hinweise
-- Die Karte verwendet native Home-Assistant-Frontend-Komponenten (`ha-icon`, `ha-entity-picker`).
-- Tippen schaltet unterstützte Domains um; Gedrückthalten öffnet „Mehr Informationen“.
-- Vor produktivem Einsatz bitte in einer Testansicht deiner Home-Assistant-Installation prüfen.
+## GitHub-Release
+
+Für Version `2.0.0` zusätzlich einen GitHub-Release mit Tag `2.0.0` erstellen. Die Repository-Dateien müssen weiterhin im Root liegen.
