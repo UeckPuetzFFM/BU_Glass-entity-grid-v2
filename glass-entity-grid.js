@@ -141,7 +141,12 @@ class GlassEntityGridEditor extends HTMLElement {
     this.shadowRoot.querySelectorAll('.device').forEach(row=>{
       const i=Number(row.dataset.index), item=this._config.entities[i], picker=row.querySelector('.picker');
       picker.hass=this._hass; picker.value=item.entity||'';
-      picker.addEventListener('value-changed',e=>{this._config.entities[i].entity=e.detail.value;this.emit();this.render();});
+      picker.addEventListener('value-changed',e=>{
+        // Do not rebuild the editor here: doing so closes the entity picker's
+        // dropdown immediately after a selection. Update config in place.
+        this._config.entities[i].entity=e.detail.value;
+        this.emit();
+      });
       row.querySelectorAll('input[data-field]').forEach(input=>input.addEventListener('change',()=>{this._config.entities[i][input.dataset.field]=input.value;this.emit();this.renderPreviewOnly();}));
       row.querySelector('.remove').addEventListener('click',()=>{this._config.entities.splice(i,1);this.emit();this.render();});
       row.querySelectorAll('[data-move]').forEach(btn=>btn.addEventListener('click',()=>{const j=i+Number(btn.dataset.move);if(j<0||j>=this._config.entities.length)return;[this._config.entities[i],this._config.entities[j]]=[this._config.entities[j],this._config.entities[i]];this.emit();this.render();}));
