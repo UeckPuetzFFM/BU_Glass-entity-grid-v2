@@ -19,7 +19,7 @@ class GlassEntityGrid extends HTMLElement {
   render() {
     if (!this.shadowRoot || !this.config) return;
     const c = this.config;
-    const entities = c.entities || [];
+    const entities = (c.entities || []).filter(item => item && item.entity);
     const cards = entities.map((item, index) => {
       const stateObj = this._hass?.states?.[item.entity];
       const state = stateObj?.state ?? 'unavailable';
@@ -162,17 +162,27 @@ class GlassEntityGridEditor extends HTMLElement {
         this._config.entities[i].entity=e.detail.value;
         this.emit();
       });
-      row.querySelectorAll('input[data-field]').forEach(input=>input.addEventListener('change',()=>{this._config.entities[i][input.dataset.field]=input.value;this.emit();this.renderPreviewOnly();}));
+      row.querySelectorAll('input[data-field]').forEach(input=>{
+        const saveField=()=>{this._config.entities[i][input.dataset.field]=input.value;this.emit();this.updatePreviewNames();};
+        input.addEventListener('input',saveField);
+        input.addEventListener('change',saveField);
+      });
       row.querySelector('.remove').addEventListener('click',()=>{this._config.entities.splice(i,1);this.emit();this.render();});
       row.querySelectorAll('[data-move]').forEach(btn=>btn.addEventListener('click',()=>{const j=i+Number(btn.dataset.move);if(j<0||j>=this._config.entities.length)return;[this._config.entities[i],this._config.entities[j]]=[this._config.entities[j],this._config.entities[i]];this.emit();this.render();}));
     });
     this.shadowRoot.getElementById('add').addEventListener('click',()=>{this._config.entities.push({entity:'',name:'',icon:''});this.emit();this.render();});
   }
-  renderPreviewOnly(){ /* The full editor refreshes on the next config change; keep edits responsive without rebuilding focused inputs. */ }
+  renderPreviewOnly(){ /* Keep the focused editor controls mounted while values are saved. */ }
+  updatePreviewNames(){
+    const preview=this.shadowRoot?.querySelector('.preview-grid');
+    if(!preview)return;
+    const items=this._config.entities.length?this._config.entities:[{name:'Stehlampe',icon:'mdi:floor-lamp'}];
+    preview.innerHTML=items.map(item=>`<div class="preview-tile"><span class="preview-icon">${this.iconGlyph(item.icon)}</span><span class="preview-text"><strong class="preview-name">${this.escape(item.name||item.entity||'Gerät')}</strong><span class="preview-state">${this.escape(this.previewState(item))}</span></span></div>`).join('');
+  }
   previewState(item){const s=this._hass?.states?.[item.entity]?.state;return s?({'on':'Ein','off':'Aus','true':'Ein','false':'Aus'}[s]||s):'Ein / Aus';}
   iconGlyph(icon){const map={'mdi:floor-lamp':'♟','mdi:lightbulb':'●','mdi:television':'▣','mdi:robot-vacuum':'◉','mdi:deck':'▱'};return map[icon]||'◉';}
   escape(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
-  emit(){this.dispatchEvent(new CustomEvent('config-changed',{bubbles:true,composed:true,detail:{config:{...this._config,entities:this._config.entities.filter(x=>x.entity)}}}));}
+  emit(){this.dispatchEvent(new CustomEvent('config-changed',{bubbles:true,composed:true,detail:{config:{...this._config,entities:this._config.entities.map(x=>({...x}))}}}));}
 }
 GlassEntityGrid.getConfigElement=()=>document.createElement('glass-entity-grid-editor');
 GlassEntityGrid.getStubConfig=()=>({ ...DEFAULTS, entities:[{entity:'light.example',name:'Beispiel',icon:'mdi:lightbulb'}] });
