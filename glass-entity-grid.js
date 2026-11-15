@@ -83,8 +83,23 @@ class GlassEntityGrid extends HTMLElement {
 }
 
 class GlassEntityGridEditor extends HTMLElement {
-  setConfig(config) { this._config = { ...DEFAULTS, ...config, entities: (config.entities || []).map(x=>({...x})) }; this.render(); }
-  set hass(hass) { this._hass = hass; if (this.isConnected && this._config) this.render(); }
+  setConfig(config) {
+    const next = { ...DEFAULTS, ...config, entities: (config.entities || []).map(x=>({...x})) };
+    // Home Assistant may call setConfig again after config-changed. Avoid
+    // rebuilding the editor when the data is already identical: doing so
+    // destroys the ha-entity-picker and closes its dropdown.
+    if (this._config && JSON.stringify(this._config) === JSON.stringify(next)) return;
+    this._config = next;
+    this.render();
+  }
+  set hass(hass) {
+    this._hass = hass;
+    // hass is refreshed frequently. Update existing pickers in place instead
+    // of rebuilding the editor DOM, which would close an open entity list.
+    if (this.isConnected && this.shadowRoot) {
+      this.shadowRoot.querySelectorAll('ha-entity-picker').forEach(picker => { picker.hass = hass; });
+    }
+  }
   connectedCallback() { if (this._config) this.render(); }
   render() {
     if (!this._config) return;
